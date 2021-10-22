@@ -44,8 +44,9 @@ open class LoaderFiles {
     context: Context
   ): ByteArray {
     try {
+      // no codesigning needed for embedded assets
       context.assets.open(asset.embeddedAssetFilename!!)
-        .use { inputStream -> return UpdatesUtils.sha256AndWriteToFile(inputStream, destination) }
+        .use { inputStream -> return UpdatesUtils.sha256AndMaybeVerifySignedHashAndWriteToDestinationFile(inputStream, destination, null) }
     } catch (e: Exception) {
       Log.e(TAG, "Failed to copy asset " + asset.embeddedAssetFilename, e)
       throw e
@@ -64,8 +65,9 @@ open class LoaderFiles {
       context.packageName
     )
     try {
+      // no codesigning needed for embedded resources
       context.resources.openRawResource(id)
-        .use { inputStream -> return UpdatesUtils.sha256AndWriteToFile(inputStream, destination) }
+        .use { inputStream -> return UpdatesUtils.sha256AndMaybeVerifySignedHashAndWriteToDestinationFile(inputStream, destination, null) }
     } catch (e: Exception) {
       Log.e(TAG, "Failed to copy asset " + asset.embeddedAssetFilename, e)
       throw e

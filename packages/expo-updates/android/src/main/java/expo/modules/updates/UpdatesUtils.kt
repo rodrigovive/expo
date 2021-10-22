@@ -11,6 +11,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import expo.modules.updates.loader.Crypto
 import org.apache.commons.io.FileUtils
 import org.json.JSONObject
 import java.io.*
@@ -104,17 +105,42 @@ object UpdatesUtils {
   }
 
   @Throws(NoSuchAlgorithmException::class, IOException::class)
-  fun sha256AndWriteToFile(inputStream: InputStream?, destination: File): ByteArray {
+  fun sha256AndMaybeVerifySignedHashAndWriteToDestinationFile(inputStream: InputStream?, destination: File, codeSigningSignatureInfo: Crypto.CodeSigningSignatureInfo?): ByteArray {
     DigestInputStream(inputStream, MessageDigest.getInstance("SHA-256")).use { digestInputStream ->
       // write file atomically by writing it to a temporary path and then renaming
       // this protects us against partially written files if the process is interrupted
       val tmpFile = File(destination.absolutePath + ".tmp")
       FileUtils.copyInputStreamToFile(digestInputStream, tmpFile)
+
+      // if codesigning is enabled, ensure the signed message digest that is included with the file is valid
+      val md = digestInputStream.messageDigest
+      if (codeSigningSignatureInfo != null) {
+        val isSignatureValid = codeSigningSignatureInfo.verifyDigest(md.digest())
+        if (!isSignatureValid) {
+          throw IOException("File download was successful, but signature was incorrect " + destination.absolutePath)
+        }
+      }
+
       if (!tmpFile.renameTo(destination)) {
         throw IOException("File download was successful, but failed to move from temporary to permanent location " + destination.absolutePath)
       }
-      val md = digestInputStream.messageDigest
+
       return md.digest()
+    }
+  }
+
+  @Throws(IOException::class)
+  fun maybeVerifySignedHash(inputStream: InputStream?, codeSigningSignatureInfo: Crypto.CodeSigningSignatureInfo?) {
+    if (codeSigningSignatureInfo == null) {
+      return
+    }
+
+    DigestInputStream(inputStream, MessageDigest.getInstance("SHA-256")).use { digestInputStream ->
+      // if codesigning is enabled, ensure the signed message digest that is included with the file is valid
+      val isSignatureValid = codeSigningSignatureInfo.verifyDigest(digestInputStream.messageDigest.digest(),)
+      if (!isSignatureValid) {
+        throw IOException("File download was successful, but signature was incorrect")
+      }
     }
   }
 
