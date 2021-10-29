@@ -7,6 +7,7 @@
 ### 🎉 New features
 
 - Method calls on iOS now can go through the JSI instead of the bridge (opt-in feature). ([#14626](https://github.com/expo/expo/pull/14626) by [@tsapeta](https://github.com/tsapeta))
+- Implemented sending native events to JavaScript in Sweet API on iOS.
 
 ### 🐛 Bug fixes
 
