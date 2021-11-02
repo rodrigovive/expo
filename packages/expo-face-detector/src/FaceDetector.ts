@@ -90,6 +90,10 @@ export type FaceFeature = {
    */
   rollAngle?: number;
   /**
+   * Pitch angle of the face (bank).
+   */
+  inclinationAngle?: number;
+  /**
    * A face identifier (used for tracking, if the same face appears on consecutive frames it will
    * have the same `faceID`).
    */

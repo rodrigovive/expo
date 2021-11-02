@@ -122,6 +122,8 @@ cModEqualFloatsWithEpsilon(dividend, divisor, modulo, cDefaultFloatComparisonEps
 
   [self putAFloat:face.headEulerAngleY forKey:@"yawAngle" toDictionary:encodedFace ifValueIsValid:face.hasHeadEulerAngleY];
 
+  [self putAFloat:face.headEulerAngleX forKey:@"inclinationAngle" toDictionary:encodedFace ifValueIsValid:face.hasHeadEulerAngleX];
+
   [self putAFloat:self.angleTransformer(face.headEulerAngleZ) forKey:@"rollAngle" toDictionary:encodedFace ifValueIsValid:face.hasHeadEulerAngleZ];
 
   return encodedFace;
